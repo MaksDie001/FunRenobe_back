@@ -1,5 +1,10 @@
+from django.contrib.auth import get_user_model
+
+
+import requests
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 
 
 class User(AbstractUser):
@@ -31,7 +36,7 @@ class Renobe_status(models.Model):
 
 class Renobe_chapters(models.Model):
     chapter_title = models.CharField(max_length=155)
-    chapter_text_fiel = models.FileField(upload_to="text/%Y/%m/%d/",null=True)
+    chapter_text=models.TextField()
     translators = models.ManyToManyField(User, related_name="transletor")
     date_time=models.DateTimeField(auto_created=True,auto_now_add=True,null=True)
     audio = models.FileField(upload_to="audio/%Y/%m/%d/")
@@ -42,7 +47,7 @@ class Renobe_chapters(models.Model):
         return self.chapter_title
 
     class Meta:
-        ordering=["chapter_number"]
+        ordering = ["-date_time"]
 
 
 class Renobe(models.Model):
@@ -57,11 +62,10 @@ class Renobe(models.Model):
         ("Заброшенна","Заброшенна")
     )
     slug=models.SlugField()
-    writer_user_id = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    writer_is_text = models.CharField(max_length=155,null=True,blank=True)
-    renobe_name = models.CharField(max_length=255)
+    writer_user_id = models.ForeignKey(User, on_delete=models.SET_NULL,null=True,blank=True,related_name="writer")
+    renobe_name = models.CharField(max_length=255,unique=True)
     renobe_title = models.TextField()
-    renobe_img=models.ImageField(upload_to="photos/%Y/%m/%d/")
+    renobe_img=models.ImageField(upload_to="photos/%Y/%m/%d/",null=True)
     date_join = models.DateField(auto_created=True,auto_now_add=True)
     last_update = models.DateTimeField(auto_created=True, auto_now_add=True)
     tags = models.ManyToManyField("Tags")
@@ -72,11 +76,17 @@ class Renobe(models.Model):
     likes = models.ManyToManyField(User, blank=True, related_name='likes')
     dislikes = models.ManyToManyField(User, blank=True, related_name='dislikes')
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
     def total_likes(self):
         return self.likes.count()
+    def total_dislikes(self):
+        return self.dislikes.count()
 
     def __str__(self):
         return self.renobe_name
+
 
 
 
