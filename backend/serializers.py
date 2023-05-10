@@ -6,7 +6,7 @@ class Renobe_img_add_Serializers(serializers.ModelSerializer):
     writer_user_id=serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model=Renobe
-        fields=("renobe_img","writer_user_id","autor_check")
+        fields=("renobe_img","writer_user_id")
 
 class Tags_serializers(serializers.ModelSerializer):
     class Meta:
@@ -17,6 +17,17 @@ class Renobe_Serializer(serializers.ModelSerializer):
     writer_user_id=serializers.StringRelatedField()
     total_likes=serializers.SerializerMethodField()
     total_dislikes=serializers.SerializerMethodField()
+    liked = serializers.SerializerMethodField()
+    disliked = serializers.SerializerMethodField()
+
+    def get_liked(self, obj):
+        request = self.context.get('request')
+        return obj.likes.filter(id=request.user.id).exists()
+
+    def get_disliked(self, obj):
+        request = self.context.get('request')
+        return obj.dislikes.filter(id=request.user.id).exists()
+
     def get_total_dislikes(self,obj):
         return obj.total_dislikes()
     def get_total_likes(self,obj):
