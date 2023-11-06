@@ -14,4 +14,9 @@ urlpatterns = [
     path("<int:pk>", One_Renobe_API.as_view()),
     path('<int:pk>/like/', AddLike.as_view()),
     path('<int:pk>/dislike/', AddDislike.as_view()),
+    path("user/<int:pk>",User_profile.as_view()),
+    path("user_renobe",User_renobe.as_view()),
+    path("renobe/chapters_add/<int:pk>",Renobe_chapter_add.as_view()),
+    path("last_chapter/<int:pk>",Renobe_last_chapter.as_view()),
+    path("hz",hz.as_view())
 ]

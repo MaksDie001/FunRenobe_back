@@ -1,21 +1,23 @@
-from django.contrib.auth import get_user_model
-
-
-import requests
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
 
 class User(AbstractUser):
+    gender=(
+        ("мужчина","мужчина"),
+        ("женщина","женщина"),
+        ("существо","существо")
+    )
+    gender_choices=models.CharField(max_length=69,choices=gender,null=True)
     avatar_img = models.ImageField(upload_to="photos/%Y/%m/%d/")
     last_join = models.DateTimeField(auto_now_add=True,null=True,auto_created=True)
     is_writer = models.BooleanField(default=False,null=True)
     phone = models.CharField(max_length=10,null=True)
+    bookmarks = models.ForeignKey("Renobe", on_delete=models.CASCADE, related_name="bookmarks", null=True)
 
     def __str__(self):
         return self.username
-
 class Counrty(models.Model):
     country_name=models.CharField(max_length=155)
     country_banner=models.ImageField(upload_to="photos/%Y/%m/%d/")
@@ -37,11 +39,11 @@ class Renobe_status(models.Model):
 class Renobe_chapters(models.Model):
     chapter_title = models.CharField(max_length=155)
     chapter_text=models.TextField()
-    translators = models.ManyToManyField(User, related_name="transletor")
     date_time=models.DateTimeField(auto_created=True,auto_now_add=True,null=True)
     audio = models.FileField(upload_to="audio/%Y/%m/%d/")
     chapter_number = models.IntegerField(default=0)
     renobe=models.ForeignKey("Renobe",related_name="Renobe",on_delete=models.SET_NULL,null=True)
+
 
     def __str__(self):
         return self.chapter_title
@@ -69,7 +71,7 @@ class Renobe(models.Model):
     date_join = models.DateField(auto_created=True,auto_now_add=True)
     last_update = models.DateTimeField(auto_created=True, auto_now_add=True)
     tags = models.ManyToManyField("Tags")
-    country=models.ForeignKey(Counrty,on_delete=models.SET_DEFAULT,default="нейзвестно")
+    country=models.ForeignKey(Counrty,on_delete=models.SET_DEFAULT,default="неwйзвестно")
     renobe_status=models.CharField(max_length=155,choices=renobe_status_choices)
     transnlation_status=models.CharField(max_length=155,choices=translation_status_choices)
     Note=models.CharField(max_length=255,default="отсутствует ")
@@ -85,7 +87,7 @@ class Renobe(models.Model):
         return self.dislikes.count()
 
     def __str__(self):
-        return self.renobe_name
+        return self.slug
 
 
 
