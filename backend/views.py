@@ -1,9 +1,15 @@
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import *
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 4
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
 class hz(generics.ListAPIView):
     serializer_class = Renobe_chapters_serializers_add
     queryset = Renobe_chapters.objects.all()
@@ -11,9 +17,12 @@ class Renobe_chapter_add(generics.CreateAPIView):
     serializer_class = Renobe_chapters_serializers_add
     queryset = Renobe_chapters.objects.all()
     def post(self, request, *args, **kwargs):
+        x = self.kwargs['pk']
         writer_user_id=Renobe.objects.get(id=kwargs['pk']).writer_user_id
         if str(writer_user_id) == str(request.user.username):
             request.data['renobe'] = kwargs['pk']
+            request.data['chapter_number']= Renobe_chapters.objects.filter(renobe=x).order_by("-chapter_number")[0].chapter_number + 1
+            print(request.data)
             return self.create(request, *args, **kwargs)
         else:
             print("blya")
@@ -95,6 +104,7 @@ class Renobe_last_chapter(APIView):
 class Renobe_chapters_API(generics.ListAPIView):
     queryset = Renobe_chapters.objects.all()
     serializer_class = Renobe_chapters_serializers
+    pagination_class = StandardResultsSetPagination
 
 class AddLike(APIView):
     permission_classes = [IsAuthenticated]
